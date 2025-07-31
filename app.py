@@ -12,7 +12,7 @@ from detection import (
 )
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"
+app.secret_key = "4EF246C33859B457DF9CA73CD2626"
 init_db()
 
 UPLOAD_FOLDER = "static/uploads"
@@ -149,9 +149,3 @@ def admin_dashboard():
     users = get_all_users()
     history = get_all_history()
     return render_template("admin_dashboard.html", users=users, history=history)
-
-
-if __name__ == "__main__":
-    # Render needs to bind to 0.0.0.0 and dynamic PORT
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
