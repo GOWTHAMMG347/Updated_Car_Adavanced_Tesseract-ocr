@@ -1,7 +1,7 @@
 Flask==2.3.3
-Werkzeug==2.3.7
-gunicorn==21.2.0
-pytesseract==0.3.10
-opencv-python-headless==4.10.0.84
+opencv-python==4.10.0.84
 pafy==0.5.5
 youtube_dl==2021.12.17
+pytesseract==0.3.10
+Werkzeug==2.3.7
+gunicorn==21.2.0
