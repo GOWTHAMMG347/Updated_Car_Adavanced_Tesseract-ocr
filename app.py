@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, Response, jsonify
 import os
+import shutil
 from datetime import datetime
 from database import init_db
 from models import (
@@ -14,6 +15,10 @@ from detection import (
 app = Flask(__name__)
 app.secret_key = "4EF246C33859B457DF9CA73CD2626"
 init_db()
+
+# Debug check for Tesseract
+print("🔎 Checking Tesseract installation...")
+print("Tesseract path:", shutil.which("tesseract"))
 
 UPLOAD_FOLDER = "static/uploads"
 OUTPUT_FOLDER = "static/outputs"
@@ -149,3 +154,6 @@ def admin_dashboard():
     users = get_all_users()
     history = get_all_history()
     return render_template("admin_dashboard.html", users=users, history=history)
+
+if __name__ == "__main__":
+    app.run(debug=True)
