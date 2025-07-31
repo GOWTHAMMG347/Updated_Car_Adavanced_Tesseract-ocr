@@ -1,14 +1,14 @@
 import cv2
 import os
 import pytesseract
+import shutil
 
-# Haarcascade model (ensure path is correct)
+# Haarcascade model
 CASCADE_PATH = "model/haarcascade_russian_plate_number.xml"
 cascade = cv2.CascadeClassifier(CASCADE_PATH)
 
-# Remove hardcoded Windows path for Tesseract
-# pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-# On Render/Linux, pytesseract will find the tesseract binary automatically (installed via Aptfile)
+# Force Tesseract path and fallback
+pytesseract.pytesseract.tesseract_cmd = shutil.which("tesseract") or "tesseract"
 
 webcam_running = False
 webcam_cap = None
@@ -17,8 +17,12 @@ detected_plates = []
 # --- OCR Helper ---
 def extract_plate_text(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    text = pytesseract.image_to_string(gray, config='--oem 3 --psm 7')
-    return text.strip()
+    try:
+        text = pytesseract.image_to_string(gray, config='--oem 3 --psm 7')
+        return text.strip()
+    except pytesseract.TesseractNotFoundError:
+        print("⚠️ Tesseract not found! Continuing without OCR.")
+        return ""
 
 # --- Blur helper ---
 def blur_region(frame, x, y, w, h):
@@ -53,7 +57,6 @@ def process_image(input_path, output_path):
         plate_text = extract_plate_text(plate_roi)
         if plate_text:
             detected_plates.append(plate_text)
-        # Blur the plate region
         image = blur_region(image, x, y, w, h)
 
     cv2.imwrite(output_path, image)
@@ -80,7 +83,6 @@ def process_video(input_path, output_path):
             plate_text = extract_plate_text(plate_roi)
             if plate_text and plate_text not in detected_plates:
                 detected_plates.append(plate_text)
-            # Blur plate
             frame = blur_region(frame, x, y, w, h)
 
         frames.append(frame)
@@ -122,7 +124,6 @@ def get_webcam_frame(frames_dir="static/frames"):
         plate_text = extract_plate_text(plate_roi)
         if plate_text and plate_text not in detected_plates:
             detected_plates.append(plate_text)
-        # Blur plate
         frame = blur_region(frame, x, y, w, h)
 
     output_path = os.path.join(frames_dir, "live.jpg")
