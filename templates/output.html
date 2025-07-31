@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-10 text-center">
+    <div class="card p-4">
+      <h3 class="mb-3">✅ Processed Output</h3>
+      {% if output_file.endswith('.mp4') %}
+        <video src="{{ url_for('output_file', filename=output_file.split('static/outputs/')[-1]) }}" controls style="width: 90%;"></video>
+      {% else %}
+        <img src="{{ url_for('output_file', filename=output_file.split('static/outputs/')[-1]) }}" class="img-fluid rounded shadow">
+      {% endif %}
+      <div class="mt-3">
+        <a href="{{ url_for('image_upload') }}" class="btn btn-secondary">Go Back</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

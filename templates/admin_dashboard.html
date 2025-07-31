@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Admin Dashboard</h3>
+<h5>All Users</h5>
+<ul class="list-group mb-4">
+  {% for user in users %}
+    <li class="list-group-item d-flex justify-content-between">
+      <span>{{ user[0] }}</span>
+      <span class="badge bg-primary">{{ user[1] }}</span>
+    </li>
+  {% endfor %}
+</ul>
+<h5>All History</h5>
+{% include "history.html" with context %}
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Upload Video for Plate Detection</h3>
+<form method="post" enctype="multipart/form-data" class="mb-4">
+  <div class="input-group">
+    <input type="file" name="video" class="form-control" accept="video/*" required>
+    <button class="btn btn-primary">Upload</button>
+  </div>
+</form>
+
+{% if output_file %}
+  <h5>Processed Video:</h5>
+  <video src="{{ output_file }}" controls class="w-100 mb-3"></video>
+  {% if plates %}
+    <h5>Detected Plates:</h5>
+    {% for plate in plates %}
+      <span class="plate-tag">{{ plate }}</span>
+    {% endfor %}
+  {% else %}
+    <p class="text-muted">No plates detected.</p>
+  {% endif %}
+{% endif %}
+{% endblock %}

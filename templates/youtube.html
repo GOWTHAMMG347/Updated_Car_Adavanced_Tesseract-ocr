@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Process YouTube Video</h3>
+<form method="post" class="mb-4">
+  <div class="input-group">
+    <input type="url" name="youtube_url" class="form-control" placeholder="Enter YouTube URL" required>
+    <button class="btn btn-danger">Process</button>
+  </div>
+</form>
+
+{% if output_file %}
+  <h5>Processed Video:</h5>
+  <video src="{{ output_file }}" controls class="w-100 mb-3"></video>
+  {% if plates %}
+    <h5>Detected Plates:</h5>
+    {% for plate in plates %}
+      <span class="plate-tag">{{ plate }}</span>
+    {% endfor %}
+  {% else %}
+    <p class="text-muted">No plates detected.</p>
+  {% endif %}
+{% endif %}
+{% endblock %}

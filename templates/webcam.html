@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Live Webcam Plate Detection</h3>
+<div class="mb-3">
+  <a href="{{ url_for('start_webcam_route') }}" class="btn btn-success">Start Webcam</a>
+  <a href="{{ url_for('stop_webcam_route') }}" class="btn btn-danger">Stop Webcam</a>
+</div>
+<img id="live_feed" src="{{ url_for('live_feed') }}" class="img-fluid border mb-3">
+
+<h5>Detected Plates:</h5>
+<div id="plates_container"></div>
+
+<script>
+setInterval(() => {
+  document.getElementById("live_feed").src = "/live_feed?" + new Date().getTime();
+  fetch("/get_plates")
+    .then(res => res.json())
+    .then(data => {
+      const container = document.getElementById("plates_container");
+      container.innerHTML = data.length > 0
+        ? data.map(p => `<span class='plate-tag'>${p}</span>`).join('')
+        : "<p class='text-muted'>No plates detected yet.</p>";
+    });
+}, 1500);
+</script>
+{% endblock %}

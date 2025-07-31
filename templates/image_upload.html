@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Upload Image for Plate Detection</h3>
+<form method="post" enctype="multipart/form-data" class="mb-4">
+  <div class="input-group">
+    <input type="file" name="image" class="form-control" accept="image/*" required>
+    <button class="btn btn-primary">Upload</button>
+  </div>
+</form>
+
+{% if output_file %}
+  <h5>Processed Image:</h5>
+  <img src="{{ output_file }}" class="img-fluid border mb-3">
+  {% if plates %}
+    <h5>Detected Plates:</h5>
+    {% for plate in plates %}
+      <span class="plate-tag">{{ plate }}</span>
+    {% endfor %}
+  {% else %}
+    <p class="text-muted">No plates detected.</p>
+  {% endif %}
+{% endif %}
+{% endblock %}

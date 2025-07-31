@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Profile: {{ user[0] }}</h3>
+<p><strong>Role:</strong> {{ user[1] }}</p>
+<hr>
+<h5>Your Detection History</h5>
+{% include "history.html" %}
+{% endblock %}
