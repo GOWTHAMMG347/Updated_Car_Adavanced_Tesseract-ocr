@@ -59,6 +59,9 @@ def image_upload():
         return redirect(url_for("login"))
 
     if request.method == "POST":
+        if "image" not in request.files or request.files["image"].filename == "":
+            return render_template("image_upload.html", error="Please upload an image")
+
         file = request.files["image"]
         input_path = os.path.join(UPLOAD_FOLDER, file.filename)
         output_path = os.path.join(OUTPUT_FOLDER, "processed_" + file.filename)
@@ -78,6 +81,9 @@ def video_upload():
         return redirect(url_for("login"))
 
     if request.method == "POST":
+        if "video" not in request.files or request.files["video"].filename == "":
+            return render_template("video_upload.html", error="Please upload a video")
+
         file = request.files["video"]
         input_path = os.path.join(UPLOAD_FOLDER, file.filename)
         output_path = os.path.join(OUTPUT_FOLDER, "processed_" + file.filename)
@@ -144,5 +150,8 @@ def admin_dashboard():
     history = get_all_history()
     return render_template("admin_dashboard.html", users=users, history=history)
 
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Render needs to bind to 0.0.0.0 and dynamic PORT
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)

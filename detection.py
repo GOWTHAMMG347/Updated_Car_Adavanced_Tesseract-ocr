@@ -2,12 +2,13 @@ import cv2
 import os
 import pytesseract
 
-# Haarcascade model
+# Haarcascade model (ensure path is correct)
 CASCADE_PATH = "model/haarcascade_russian_plate_number.xml"
 cascade = cv2.CascadeClassifier(CASCADE_PATH)
 
-# Tesseract path
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+# Remove hardcoded Windows path for Tesseract
+# pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+# On Render/Linux, pytesseract will find the tesseract binary automatically (installed via Aptfile)
 
 webcam_running = False
 webcam_cap = None
@@ -21,9 +22,9 @@ def extract_plate_text(image):
 
 # --- Blur helper ---
 def blur_region(frame, x, y, w, h):
-    roi = frame[y:y+h, x:x+w]
+    roi = frame[y:y + h, x:x + w]
     blurred = cv2.GaussianBlur(roi, (51, 51), 30)
-    frame[y:y+h, x:x+w] = blurred
+    frame[y:y + h, x:x + w] = blurred
     return frame
 
 # --- Save processed outputs ---
@@ -48,7 +49,7 @@ def process_image(input_path, output_path):
     plates = cascade.detectMultiScale(gray, 1.1, 4)
 
     for (x, y, w, h) in plates:
-        plate_roi = image[y:y+h, x:x+w]
+        plate_roi = image[y:y + h, x:x + w]
         plate_text = extract_plate_text(plate_roi)
         if plate_text:
             detected_plates.append(plate_text)
@@ -75,7 +76,7 @@ def process_video(input_path, output_path):
         plates = cascade.detectMultiScale(gray, 1.1, 4)
 
         for (x, y, w, h) in plates:
-            plate_roi = frame[y:y+h, x:x+w]
+            plate_roi = frame[y:y + h, x:x + w]
             plate_text = extract_plate_text(plate_roi)
             if plate_text and plate_text not in detected_plates:
                 detected_plates.append(plate_text)
@@ -117,7 +118,7 @@ def get_webcam_frame(frames_dir="static/frames"):
     plates = cascade.detectMultiScale(gray, 1.1, 4)
 
     for (x, y, w, h) in plates:
-        plate_roi = frame[y:y+h, x:x+w]
+        plate_roi = frame[y:y + h, x:x + w]
         plate_text = extract_plate_text(plate_roi)
         if plate_text and plate_text not in detected_plates:
             detected_plates.append(plate_text)
