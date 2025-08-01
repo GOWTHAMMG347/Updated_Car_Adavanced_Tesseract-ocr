@@ -1,13 +1,13 @@
 services:
   - type: web
-    name: car-plate-blur-ocr
+    name: car-plate-detector
     env: python
+    plan: free
     buildCommand: |
-      apt-get update && \
-      apt-get install -y --no-install-recommends $(cat Aptfile) && \
+      apt-get update && apt-get install -y tesseract-ocr libtesseract-dev libleptonica-dev
+      pip install --upgrade pip
       pip install -r requirements.txt
     startCommand: gunicorn app:app
-    plan: free
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.10
+      - key: PYTHONUNBUFFERED
+        value: "1"
