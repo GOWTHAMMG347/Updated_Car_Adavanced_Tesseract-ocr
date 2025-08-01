@@ -156,4 +156,5 @@ def admin_dashboard():
     return render_template("admin_dashboard.html", users=users, history=history)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)
+
