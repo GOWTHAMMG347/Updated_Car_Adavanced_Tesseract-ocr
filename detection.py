@@ -16,6 +16,10 @@ detected_plates = []
 
 # --- OCR Helper ---
 def extract_plate_text(image):
+    """
+    Extracts text from a license plate image using Tesseract OCR.
+    If Tesseract is missing, it will gracefully continue without OCR.
+    """
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     try:
         text = pytesseract.image_to_string(gray, config='--oem 3 --psm 7')
@@ -26,6 +30,9 @@ def extract_plate_text(image):
 
 # --- Blur helper ---
 def blur_region(frame, x, y, w, h):
+    """
+    Applies Gaussian blur to the detected license plate region.
+    """
     roi = frame[y:y + h, x:x + w]
     blurred = cv2.GaussianBlur(roi, (51, 51), 30)
     frame[y:y + h, x:x + w] = blurred
@@ -33,6 +40,9 @@ def blur_region(frame, x, y, w, h):
 
 # --- Save processed outputs ---
 def save_output_file(output_path, frame_list, is_video=False):
+    """
+    Saves processed frames as an image or a video.
+    """
     if is_video:
         height, width, _ = frame_list[0].shape
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
@@ -45,6 +55,9 @@ def save_output_file(output_path, frame_list, is_video=False):
 
 # --- Process image ---
 def process_image(input_path, output_path):
+    """
+    Processes a single image: detects plates, blurs them, and extracts text.
+    """
     global detected_plates
     detected_plates = []
 
@@ -64,6 +77,9 @@ def process_image(input_path, output_path):
 
 # --- Process video ---
 def process_video(input_path, output_path):
+    """
+    Processes a video: detects plates, blurs them, and extracts text frame by frame.
+    """
     global detected_plates
     detected_plates = []
 
@@ -93,6 +109,9 @@ def process_video(input_path, output_path):
 
 # --- Webcam control ---
 def start_webcam(frames_dir="static/frames"):
+    """
+    Starts webcam capture and creates a frames directory if it doesn't exist.
+    """
     global webcam_running, webcam_cap, detected_plates
     if not os.path.exists(frames_dir):
         os.makedirs(frames_dir)
@@ -101,12 +120,19 @@ def start_webcam(frames_dir="static/frames"):
     detected_plates = []
 
 def stop_webcam():
+    """
+    Stops webcam capture.
+    """
     global webcam_running, webcam_cap
     webcam_running = False
     if webcam_cap:
         webcam_cap.release()
 
 def get_webcam_frame(frames_dir="static/frames"):
+    """
+    Captures a single webcam frame, processes it for plate detection, 
+    and saves it as 'live.jpg' in the frames directory.
+    """
     global webcam_cap, webcam_running, detected_plates
 
     if not webcam_cap or not webcam_running:
@@ -131,4 +157,7 @@ def get_webcam_frame(frames_dir="static/frames"):
     return output_path
 
 def get_detected_plates():
+    """
+    Returns a list of all detected plate texts during the session.
+    """
     return detected_plates
