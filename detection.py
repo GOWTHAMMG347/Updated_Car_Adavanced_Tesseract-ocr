@@ -2,112 +2,78 @@ import cv2
 import os
 import pytesseract
 import shutil
-import subprocess
 
-# Haarcascade model
 CASCADE_PATH = "model/haarcascade_russian_plate_number.xml"
 cascade = cv2.CascadeClassifier(CASCADE_PATH)
 
-# --- Check and set Tesseract path ---
-def ensure_tesseract_installed():
-    tesseract_path = shutil.which("tesseract")
-    if tesseract_path:
-        print(f"🔹 Tesseract found at: {tesseract_path}")
-        return tesseract_path
-    else:
-        print("⚠️ Tesseract not found! OCR will be disabled.")
-        return None
+# Detect Tesseract path (works inside Docker)
+tesseract_path = shutil.which("tesseract")
+if not tesseract_path:
+    print("⚠️ Tesseract not found! OCR will be disabled.")
+else:
+    print(f"🔎 Checking Tesseract installation...\nTesseract path: {tesseract_path}")
 
-tesseract_cmd = ensure_tesseract_installed()
-pytesseract.pytesseract.tesseract_cmd = tesseract_cmd or "tesseract"
+pytesseract.pytesseract.tesseract_cmd = tesseract_path or "tesseract"
 
 webcam_running = False
 webcam_cap = None
 detected_plates = []
 
-# --- OCR Helper ---
 def extract_plate_text(image):
-    """
-    Extracts text from a license plate image using Tesseract OCR.
-    """
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    if not tesseract_cmd:
-        return ""  # skip OCR if not installed
     try:
-        text = pytesseract.image_to_string(gray, config='--oem 3 --psm 7')
-        return text.strip()
-    except Exception as e:
-        print(f"OCR error: {e}")
+        return pytesseract.image_to_string(gray, config='--oem 3 --psm 7').strip()
+    except pytesseract.TesseractNotFoundError:
         return ""
 
-# --- Blur helper ---
 def blur_region(frame, x, y, w, h):
     roi = frame[y:y + h, x:x + w]
-    blurred = cv2.GaussianBlur(roi, (51, 51), 30)
-    frame[y:y + h, x:x + w] = blurred
+    frame[y:y + h, x:x + w] = cv2.GaussianBlur(roi, (51, 51), 30)
     return frame
 
-# --- Save processed outputs ---
 def save_output_file(output_path, frame_list, is_video=False):
     if is_video:
         height, width, _ = frame_list[0].shape
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        out = cv2.VideoWriter(output_path, fourcc, 20, (width, height))
+        out = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc(*'XVID'), 20, (width, height))
         for frame in frame_list:
             out.write(frame)
         out.release()
     else:
         cv2.imwrite(output_path, frame_list)
 
-# --- Process image ---
 def process_image(input_path, output_path):
     global detected_plates
     detected_plates = []
-
     image = cv2.imread(input_path)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    plates = cascade.detectMultiScale(gray, 1.1, 4)
-
+    plates = cascade.detectMultiScale(cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), 1.1, 4)
     for (x, y, w, h) in plates:
-        plate_roi = image[y:y + h, x:x + w]
-        plate_text = extract_plate_text(plate_roi)
+        plate_text = extract_plate_text(image[y:y + h, x:x + w])
         if plate_text:
             detected_plates.append(plate_text)
         image = blur_region(image, x, y, w, h)
-
     cv2.imwrite(output_path, image)
     return detected_plates
 
-# --- Process video ---
 def process_video(input_path, output_path):
     global detected_plates
     detected_plates = []
-
     cap = cv2.VideoCapture(input_path)
     frames = []
-
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             break
-
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        plates = cascade.detectMultiScale(gray, 1.1, 4)
-
+        plates = cascade.detectMultiScale(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), 1.1, 4)
         for (x, y, w, h) in plates:
-            plate_roi = frame[y:y + h, x:x + w]
-            plate_text = extract_plate_text(plate_roi)
+            plate_text = extract_plate_text(frame[y:y + h, x:x + w])
             if plate_text and plate_text not in detected_plates:
                 detected_plates.append(plate_text)
             frame = blur_region(frame, x, y, w, h)
-
         frames.append(frame)
-
     cap.release()
     save_output_file(output_path, frames, is_video=True)
     return detected_plates
 
-# --- Webcam functions ---
 def start_webcam(frames_dir="static/frames"):
     global webcam_running, webcam_cap, detected_plates
     if not os.path.exists(frames_dir):
@@ -126,21 +92,15 @@ def get_webcam_frame(frames_dir="static/frames"):
     global webcam_cap, webcam_running, detected_plates
     if not webcam_cap or not webcam_running:
         return None
-
     ret, frame = webcam_cap.read()
     if not ret:
         return None
-
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    plates = cascade.detectMultiScale(gray, 1.1, 4)
-
+    plates = cascade.detectMultiScale(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), 1.1, 4)
     for (x, y, w, h) in plates:
-        plate_roi = frame[y:y + h, x:x + w]
-        plate_text = extract_plate_text(plate_roi)
+        plate_text = extract_plate_text(frame[y:y + h, x:x + w])
         if plate_text and plate_text not in detected_plates:
             detected_plates.append(plate_text)
         frame = blur_region(frame, x, y, w, h)
-
     output_path = os.path.join(frames_dir, "live.jpg")
     cv2.imwrite(output_path, frame)
     return output_path
