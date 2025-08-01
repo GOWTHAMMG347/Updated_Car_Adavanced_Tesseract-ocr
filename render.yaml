@@ -1,9 +1,16 @@
 services:
   - type: web
-    name: car-plate-app
+    name: updated-car-adavanced-tesseract-ocr
     env: python
-    plan: free
     buildCommand: |
-      apt-get update && apt-get install -y $(cat Aptfile)
+      apt-get update && \
+      apt-get install -y $(cat Aptfile) && \
+      pip install --upgrade pip && \
       pip install -r requirements.txt
     startCommand: gunicorn app:app
+    plan: free
+    envVars
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: PORT
+        value: "10000"
