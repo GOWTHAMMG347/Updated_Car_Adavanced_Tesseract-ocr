@@ -3,12 +3,17 @@ import os
 import pytesseract
 import shutil
 
-# Haarcascade model
+# Haarcascade model path
 CASCADE_PATH = "model/haarcascade_russian_plate_number.xml"
 cascade = cv2.CascadeClassifier(CASCADE_PATH)
 
-# Force Tesseract path and fallback
-pytesseract.pytesseract.tesseract_cmd = shutil.which("tesseract") or "tesseract"
+# Dynamically detect Tesseract path
+tesseract_path = shutil.which("tesseract")
+if tesseract_path:
+    pytesseract.pytesseract.tesseract_cmd = tesseract_path
+    print(f"✅ Tesseract found at: {tesseract_path}")
+else:
+    print("⚠️ Tesseract not found! OCR will be disabled.")
 
 webcam_running = False
 webcam_cap = None
@@ -20,6 +25,9 @@ def extract_plate_text(image):
     Extracts text from a license plate image using Tesseract OCR.
     If Tesseract is missing, it will gracefully continue without OCR.
     """
+    if not tesseract_path:
+        return ""  # Skip OCR if Tesseract not available
+
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     try:
         text = pytesseract.image_to_string(gray, config='--oem 3 --psm 7')
