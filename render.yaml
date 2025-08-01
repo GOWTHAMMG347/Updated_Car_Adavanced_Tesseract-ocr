@@ -1,16 +1,13 @@
 services:
   - type: web
-    name: updated-car-adavanced-tesseract-ocr
+    name: car-plate-blur-ocr
     env: python
     buildCommand: |
       apt-get update && \
-      apt-get install -y $(cat Aptfile) && \
-      pip install --upgrade pip && \
+      apt-get install -y --no-install-recommends $(cat Aptfile) && \
       pip install -r requirements.txt
     startCommand: gunicorn app:app
     plan: free
-    envVars
-      - key: PYTHONUNBUFFERED
-        value: "1"
-      - key: PORT
-        value: "10000"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10
