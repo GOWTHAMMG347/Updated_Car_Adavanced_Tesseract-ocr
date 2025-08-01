@@ -1,13 +1,7 @@
 services:
   - type: web
     name: car-plate-detector
-    env: python
+    env: docker
     plan: free
-    buildCommand: |
-      apt-get update && apt-get install -y tesseract-ocr libtesseract-dev libleptonica-dev
-      pip install --upgrade pip
-      pip install -r requirements.txt
-    startCommand: gunicorn app:app
-    envVars:
-      - key: PYTHONUNBUFFERED
-        value: "1"
+    dockerfilePath: ./Dockerfile
+
